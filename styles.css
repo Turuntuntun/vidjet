@@ -1,0 +1,29 @@
+input{
+    display: block;
+    margin-bottom: 10px;
+    outline:none;
+    width: 200px;
+    height: 30px;
+    padding-left:10px;
+    box-sizing:border-box;
+}
+input:focus{
+    box-shadow: inset 7px 7px  5px -5px rgba(0,0,0,0.3) ;
+    border: 1px solid gray;
+}
+input:hover{
+    border: 1px solid rgba(0,0,0,0.7);
+}
+input[type='submit']{
+    cursor:pointer;
+    background-color: #4877ff;
+    outline:none;
+    border:none;
+}
+input[type='submit']:hover{
+    background-color: #331dda;
+}
+form{
+    width:250px;
+    margin:0 auto;
+}
