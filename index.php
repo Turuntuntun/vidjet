@@ -10,42 +10,28 @@ error_reporting('E_ALL');
 include 'layout.php';//Подключение макета формы.
 auth(); //Вызов авторизации.
 //echo $a;
-$arr=[];
+
 if(isset($_POST['submit'])){
     $count=$_POST['contact'];
-    for($i=0;$i<$count;$i++){
-        $z=create_essence();
-        $arr[] = array('name'=>$z);
-        $z=create_essence();
-        $arr1[] = array('name'=>$z);
-        $z=create_essence();
-        $arr2[] = array('name'=>$z);
-        $z=create_essence();
-        $arr3[] = array('name'=>$z);
-    }
-}
-knife($arr, 'contacts');
-knife($arr1, 'leads');
-knife($arr2, 'companies');
-knife($arr3, 'customers');
-
-function knife($arr,$type){
-    while(count($arr)){
-        $newarray = [];
-        if(count($arr)/200>1){
+    while($count){
+        if($count/200>1){
             $limit=200;
-        }else $limit = count($arr);
+        }else $limit = $count;
         for($i=0;$i<$limit;$i++){
-            $newarray[]=array_shift($arr);
+            $contacs[] = array('name' => create_essence());
+            $leads[] = array('name' => create_essence());
+            $companies[] = array('name' => create_essence());
+            $customers[] = array('name' => create_essence());
         }
-        var_dump($newarray);
-        echo '<br><br>';
-        add($newarray, $type);
-    }
-}
+        add($contacs, 'contacts');
+        var_dump($contacs);
+        $contacs = [];
+        $count -= $limit;
 
+    }
+
+}
 function add($value,$type){
-    echo '<br>';
     $data = array (
         'add' =>
             $value
@@ -68,9 +54,11 @@ undefined/2.0");
     $out = curl_exec($curl);
     curl_close($curl);
     $result = json_decode($out,TRUE);
-
+    $arr=$result['_embedded']['items'];
+    foreach ($arr as $value){
+        $res[] = $value['id'];
+    }
 }
-
 function auth(){//Авторизация.
     $user=array(
         'USER_LOGIN'=>'uburov@team.amocrm.com', #Ваш логин (электронная почта)
