@@ -11,10 +11,11 @@ include 'layout.php';//Подключение макета формы.
 auth(); //Вызов авторизации.
 if(isset($_POST['submit'])){
     $id_mult = add_multiselect();
+
     $count=$_POST['contact'];
     while($count){
-        if($count/200>1){
-            $limit=200;
+        if($count/500>1){
+            $limit=500;
         }else $limit = $count;
         for($i=0;$i<$limit;$i++){
             $contacs[] = array('name' => create_essence());
@@ -28,8 +29,8 @@ if(isset($_POST['submit'])){
         $id_companies = add($companies, 'companies');
         $id_customers = add($customers, 'customers');
         $id_multiselect = list_multyselect_id($id_mult);
+        select_multy($id_contacs,$random_arr,$id_multiselect,$id_mult);
         $random_arr = [];
-        select_multy($contacs,$random_arr,$id_multiselect);
         connection_essence($id_contacs,$id_companies,'company_id','contacts');
         connection_essence($id_contacs,$id_leads,'leads_id','contacts');
         connection_essence($id_contacs,$id_customers,'customers_id','contacts');
@@ -43,8 +44,60 @@ if(isset($_POST['submit'])){
     }
 }
 //Заполнение select
-function select_multy($contacs,$random_arr,$id_multiselect){
+function select_multy($id_contacs,$random_arr,$id_multiselect,$id_mult){
     $arr = [];
+    $res = [];
+    foreach ($id_multiselect as $key => $value2){
+        $arr[] = $key;
+    }
+
+    foreach ($random_arr as $key=> $value){
+        foreach ($value as $key2 => $value2){
+            $res[$key][] = $arr[$value2];
+        }
+       // var_dump($res[$key]);
+        //echo '<br>';
+    }
+    foreach ($id_contacs as $key => $value) {
+             $val[$key] = array (
+                             'id' => $id_contacs[$key],
+                             'updated_at' => time(),
+                             'custom_fields' =>
+                                 array (
+                                     0 =>array(
+                                            'id'=>$id_mult,
+                                            'values'=>$res[$key],
+                                     )
+                                 )
+             );
+             $result[] = $val[$key];
+             var_dump($result[$key]);
+             echo '<br>';
+    }
+    echo '<br>';
+
+    $data = array (
+        'update' =>
+            $result,
+    );
+    $link = "https://uburov.amocrm.ru/api/v2/contacts";
+
+    $headers[] = "Accept: application/json";
+
+    //Curl options
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
+    curl_setopt($curl, CURLOPT_USERAGENT, "amoCRM-API-client-
+undefined/2.0");
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+    curl_setopt($curl, CURLOPT_URL, $link);
+    curl_setopt($curl, CURLOPT_HEADER,false);
+    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(__FILE__)."/cookie.txt");
+    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(__FILE__)."/cookie.txt");
+    $out = curl_exec($curl);
+    curl_close($curl);
+    $result = json_decode($out,TRUE);
 
 }
 //Добавление мультиселекта
@@ -86,7 +139,7 @@ function add_multiselect(){
 function random_mult(){
     $count = rand(1,10);
     for($i=0;$i<=$count;$i++){
-        $a = rand(0,10);
+        $a = rand(0,9);
         $arr[] = $a;
     }
     return $arr;
