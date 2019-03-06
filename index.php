@@ -5,6 +5,7 @@
  * Date: 04.03.2019
  * Time: 17:55
  */
+ini_set('max_execution_time', 2000);
 ini_set('display_errors','On');
 error_reporting('E_ALL');
 include 'layout.php';//Подключение макета формы.
