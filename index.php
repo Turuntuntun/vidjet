@@ -9,8 +9,6 @@ ini_set('display_errors','On');
 error_reporting('E_ALL');
 include 'layout.php';//Подключение макета формы.
 auth(); //Вызов авторизации.
-//echo $a;
-
 if(isset($_POST['submit'])){
     $count=$_POST['contact'];
     while($count){
@@ -23,14 +21,57 @@ if(isset($_POST['submit'])){
             $companies[] = array('name' => create_essence());
             $customers[] = array('name' => create_essence());
         }
-        add($contacs, 'contacts');
-        var_dump($contacs);
-        $contacs = [];
-        $count -= $limit;
-
+        $id_contacs = add($contacs, 'contacts');
+        $id_leads = add($leads, 'leads');
+        $id_companies = add($companies, 'companies');
+        $id_customers = add($customers, 'customers');
+        connection_essence($id_contacs,$id_companies,'company_id','contacts');
+        connection_essence($id_contacs,$id_leads,'leads_id','contacts');
+        connection_essence($id_contacs,$id_customers,'customers_id','contacts');
+        connection_essence($id_companies,$id_leads,'leads_id','companies');
+        connection_essence($id_companies,$id_customers,'customers_id','companies');
+        $contacs=[];
+        $leads=[];
+        $companies=[];
+        $customers=[];
+        $count-=$limit;
     }
-
 }
+
+//Связи сущностей
+function connection_essence($essence1_id, $essence2_id, $type1, $type2){
+    $newarr = [];
+    foreach ($essence1_id as $key => $value){
+        $newarr[] = array(
+                        'id'=>$value,
+                        'updated_at' => time(),
+                         $type1 => $essence2_id[$key]
+                    );
+    }
+    $data = array (
+        'update' =>
+            $newarr
+    );
+    $link = "https://uburov.amocrm.ru/api/v2/".$type2;
+
+    $headers[] = "Accept: application/json";
+
+    //Curl options
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
+    curl_setopt($curl, CURLOPT_USERAGENT, "amoCRM-API-client-
+undefined/2.0");
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+    curl_setopt($curl, CURLOPT_URL, $link);
+    curl_setopt($curl, CURLOPT_HEADER,false);
+    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(__FILE__)."/cookie.txt");
+    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(__FILE__)."/cookie.txt");
+    $out = curl_exec($curl);
+    curl_close($curl);
+    $result = json_decode($out,TRUE);
+}
+//Добавление сущности
 function add($value,$type){
     $data = array (
         'add' =>
@@ -55,11 +96,16 @@ undefined/2.0");
     curl_close($curl);
     $result = json_decode($out,TRUE);
     $arr=$result['_embedded']['items'];
+   // $res = [];
     foreach ($arr as $value){
-        $res[] = $value['id'];
+        if($value['id']) {
+            $res[] = $value['id'];
+        }
     }
+    return $res;
 }
-function auth(){//Авторизация.
+//Авторизация.
+function auth(){
     $user=array(
         'USER_LOGIN'=>'uburov@team.amocrm.com', #Ваш логин (электронная почта)
         'USER_HASH'=>'1fc21263abc62f29dee2717ffb26defb02186239' #Хэш для доступа к API (смотрите в профиле пользователя)
@@ -110,6 +156,7 @@ function auth(){//Авторизация.
     }
 
 }
+//Случайное название сущностей
 function create_essence(){
     $length = rand(3,12);
     $chars = 'abcdefghiknrstyzABCDEFGHKNQRSTYZ23456789';
