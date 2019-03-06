@@ -30,6 +30,7 @@ if(isset($_POST['submit'])){
         connection_essence($id_contacs,$id_customers,'customers_id','contacts');
         connection_essence($id_companies,$id_leads,'leads_id','companies');
         connection_essence($id_companies,$id_customers,'customers_id','companies');
+        add_multiselect();
         $contacs=[];
         $leads=[];
         $companies=[];
@@ -37,7 +38,51 @@ if(isset($_POST['submit'])){
         $count-=$limit;
     }
 }
+function add_multiselect(){
+    $data = array (
+        'add' =>
+            array (
+                0 =>
+                    array (
+                        'name' => 'kk',
+                        'type' => '5',
+                        'element_type' => '1',
+                        'origin' => '32',
+                        'enums' =>
+                            array (
+                                0 => '1',
+                                1 => '2',
+                                2 => '3',
+                                3 => '4',
+                                4 => '5',
+                                5 => '6',
+                                6 => '7',
+                                7 => '8',
+                                8 => '9',
+                                9 => '10',
+                            ),
+                    ),
+            ),
+    );
+    $link = "https://uburov.amocrm.ru/api/v2/fields";
 
+    $headers[] = "Accept: application/json";
+
+    //Curl options
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
+    curl_setopt($curl, CURLOPT_USERAGENT, "amoCRM-API-client-
+undefined/2.0");
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+    curl_setopt($curl, CURLOPT_URL, $link);
+    curl_setopt($curl, CURLOPT_HEADER,false);
+    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(__FILE__)."/cookie.txt");
+    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(__FILE__)."/cookie.txt");
+    $out = curl_exec($curl);
+    curl_close($curl);
+    $result = json_decode($out,TRUE);
+}
 //Связи сущностей
 function connection_essence($essence1_id, $essence2_id, $type1, $type2){
     $newarr = [];
