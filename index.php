@@ -10,6 +10,7 @@ error_reporting('E_ALL');
 include 'layout.php';//Подключение макета формы.
 auth(); //Вызов авторизации.
 if(isset($_POST['submit'])){
+    $id_mult = add_multiselect();
     $count=$_POST['contact'];
     while($count){
         if($count/200>1){
@@ -20,17 +21,20 @@ if(isset($_POST['submit'])){
             $leads[] = array('name' => create_essence());
             $companies[] = array('name' => create_essence());
             $customers[] = array('name' => create_essence());
+            $random_arr[] = random_mult();
         }
         $id_contacs = add($contacs, 'contacts');
         $id_leads = add($leads, 'leads');
         $id_companies = add($companies, 'companies');
         $id_customers = add($customers, 'customers');
+        $id_multiselect = list_multyselect_id($id_mult);
+        $random_arr = [];
+        select_multy($contacs,$random_arr,$id_multiselect);
         connection_essence($id_contacs,$id_companies,'company_id','contacts');
         connection_essence($id_contacs,$id_leads,'leads_id','contacts');
         connection_essence($id_contacs,$id_customers,'customers_id','contacts');
         connection_essence($id_companies,$id_leads,'leads_id','companies');
         connection_essence($id_companies,$id_customers,'customers_id','companies');
-        add_multiselect();
         $contacs=[];
         $leads=[];
         $companies=[];
@@ -38,6 +42,12 @@ if(isset($_POST['submit'])){
         $count-=$limit;
     }
 }
+//Заполнение select
+function select_multy($contacs,$random_arr,$id_multiselect){
+    $arr = [];
+
+}
+//Добавление мультиселекта
 function add_multiselect(){
     $data = array (
         'add' =>
@@ -69,19 +79,17 @@ function add_multiselect(){
     $headers[] = "Accept: application/json";
 
     //Curl options
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
-    curl_setopt($curl, CURLOPT_USERAGENT, "amoCRM-API-client-
-undefined/2.0");
-    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
-    curl_setopt($curl, CURLOPT_URL, $link);
-    curl_setopt($curl, CURLOPT_HEADER,false);
-    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(__FILE__)."/cookie.txt");
-    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(__FILE__)."/cookie.txt");
-    $out = curl_exec($curl);
-    curl_close($curl);
-    $result = json_decode($out,TRUE);
+    $result = curl($data,$headers,$link);
+    return $result['_embedded']['items'][0]['id'];
+}
+//Случаынй выбор полей мультиселекта
+function random_mult(){
+    $count = rand(1,10);
+    for($i=0;$i<=$count;$i++){
+        $a = rand(0,10);
+        $arr[] = $a;
+    }
+    return $arr;
 }
 //Связи сущностей
 function connection_essence($essence1_id, $essence2_id, $type1, $type2){
@@ -102,19 +110,8 @@ function connection_essence($essence1_id, $essence2_id, $type1, $type2){
     $headers[] = "Accept: application/json";
 
     //Curl options
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
-    curl_setopt($curl, CURLOPT_USERAGENT, "amoCRM-API-client-
-undefined/2.0");
-    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
-    curl_setopt($curl, CURLOPT_URL, $link);
-    curl_setopt($curl, CURLOPT_HEADER,false);
-    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(__FILE__)."/cookie.txt");
-    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(__FILE__)."/cookie.txt");
-    $out = curl_exec($curl);
-    curl_close($curl);
-    $result = json_decode($out,TRUE);
+    $result = curl($data,$headers,$link);
+
 }
 //Добавление сущности
 function add($value,$type){
@@ -127,19 +124,7 @@ function add($value,$type){
     $headers[] = "Accept: application/json";
 
     //Curl options
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
-    curl_setopt($curl, CURLOPT_USERAGENT, "amoCRM-API-client-
-undefined/2.0");
-    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
-    curl_setopt($curl, CURLOPT_URL, $link);
-    curl_setopt($curl, CURLOPT_HEADER,false);
-    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(__FILE__)."/cookie.txt");
-    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(__FILE__)."/cookie.txt");
-    $out = curl_exec($curl);
-    curl_close($curl);
-    $result = json_decode($out,TRUE);
+    $result =  curl($data,$headers,$link);
     $arr=$result['_embedded']['items'];
    // $res = [];
     foreach ($arr as $value){
@@ -201,9 +186,31 @@ function auth(){
     }
 
 }
+//Получение id мультиселектов
+function list_multyselect_id($id){
+    $link = 'https://uburov.amocrm.ru/api/v2/account?with=custom_fields';
+
+    $headers[] = "Accept: application/json";
+
+    //Curl options
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
+    curl_setopt($curl, CURLOPT_USERAGENT, "amoCRM-API-client-
+undefined/2.0");
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl, CURLOPT_URL, $link);
+    curl_setopt($curl, CURLOPT_HEADER,false);
+    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(__FILE__)."/cookie.txt");
+    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(__FILE__)."/cookie.txt");
+    $out = curl_exec($curl);
+    curl_close($curl);
+    $result = json_decode($out,TRUE);
+    return $result['_embedded']['custom_fields']['contacts'][$id]['enums'];
+
+}
 //Случайное название сущностей
 function create_essence(){
-    $length = rand(3,12);
+    $length = rand(1,25);
     $chars = 'abcdefghiknrstyzABCDEFGHKNQRSTYZ23456789';
     $numChars = strlen($chars);
     $string = '';
@@ -211,4 +218,20 @@ function create_essence(){
         $string .= substr($chars, rand(1, $numChars) - 1, 1);
     }
     return $string;
+}
+//Функция вызова
+function curl($data,$headers,$link){
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
+    curl_setopt($curl, CURLOPT_USERAGENT, "amoCRM-API-client-
+undefined/2.0");
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+    curl_setopt($curl, CURLOPT_URL, $link);
+    curl_setopt($curl, CURLOPT_HEADER,false);
+    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(__FILE__)."/cookie.txt");
+    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(__FILE__)."/cookie.txt");
+    $out = curl_exec($curl);
+    curl_close($curl);
+    return json_decode($out,TRUE);
 }
