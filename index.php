@@ -12,7 +12,6 @@ include 'layout.php';//Подключение макета формы.
 auth(); //Вызов авторизации.
 if(isset($_POST['submit'])){
     $id_mult = add_multiselect();
-
     $count=$_POST['contact'];
     while($count){
         if($count/500>1){
@@ -44,7 +43,34 @@ if(isset($_POST['submit'])){
         $count-=$limit;
     }
 }
-//Заполнение select
+//Проверка дублирования мультиселекта
+function check_mult($name,$type){
+    $link = 'https://uburov.amocrm.ru/api/v2/account?with=custom_fields';
+
+    $headers[] = "Accept: application/json";
+
+    //Curl options
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
+    curl_setopt($curl, CURLOPT_USERAGENT, "amoCRM-API-client-
+undefined/2.0");
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl, CURLOPT_URL, $link);
+    curl_setopt($curl, CURLOPT_HEADER,false);
+    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(__FILE__)."/cookie.txt");
+    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(__FILE__)."/cookie.txt");
+    $out = curl_exec($curl);
+    curl_close($curl);
+    $result = json_decode($out,TRUE);
+    $custom_fields = $result['_embedded']['custom_fields']['contacts'];
+    foreach ($custom_fields as $value){
+        if($value['name'] == $name and $value['field_type'] == $type){
+            return $value['id'];
+        }
+    }
+    return null;
+}
+///Заполнение select
 function select_multy($id_contacs,$random_arr,$id_multiselect,$id_mult){
     $arr = [];
     $res = [];
@@ -72,7 +98,6 @@ function select_multy($id_contacs,$random_arr,$id_multiselect,$id_mult){
                                  )
              );
              $result[] = $val[$key];
-             var_dump($result[$key]);
              echo '<br>';
     }
     echo '<br>';
@@ -128,13 +153,15 @@ function add_multiselect(){
                     ),
             ),
     );
+    $fl = check_mult($data['add'][0]['name'],$data['add'][0]['type']);
     $link = "https://uburov.amocrm.ru/api/v2/fields";
 
     $headers[] = "Accept: application/json";
+    if(!$fl){
+        $result = curl($data,$headers,$link);
+        return $result['_embedded']['items'][0]['id'];
+    }else return $fl;
 
-    //Curl options
-    $result = curl($data,$headers,$link);
-    return $result['_embedded']['items'][0]['id'];
 }
 //Случаынй выбор полей мультиселекта
 function random_mult(){
