@@ -11,7 +11,7 @@ error_reporting('E_ALL');
 include 'layout.php';//Подключение макета формы.
 auth(); //Вызов авторизации.
 if(isset($_POST['submit'])){
-    $id_mult = add_multiselect();
+    $id_mult=add_custom_field('kk','5','1',[0=>'1',1=>'2',2=>'3',3=>'4',4=>'5',5=>'6',6=>'7',7=>'8',8 =>'9',9 => '10']);
     $count=$_POST['contact'];
     while($count){
         if($count/500>1){
@@ -43,8 +43,12 @@ if(isset($_POST['submit'])){
         $count-=$limit;
     }
 }
+if(isset($_POST['text']) and $_POST['id_essence']){
+    $id_text = $_POST['id_essence'];
+    add_custom_field($_POST['text'],'1',$id_text);
+}
 //Проверка дублирования мультиселекта
-function check_mult($name,$type){
+function check_mult($name,$type,$id_type){
     $link = 'https://uburov.amocrm.ru/api/v2/account?with=custom_fields';
 
     $headers[] = "Accept: application/json";
@@ -62,8 +66,16 @@ undefined/2.0");
     $out = curl_exec($curl);
     curl_close($curl);
     $result = json_decode($out,TRUE);
-    $custom_fields = $result['_embedded']['custom_fields']['contacts'];
+    foreach ($result as $value){
+        var_dump($value);
+        echo '<br>';
+    }
+    $essence = ['1'=>'contacts','2'=>'leads','3'=>'companies','12'=>'customers'];
+    $custom_fields = $result['_embedded']['custom_fields'][$essence[$id_type]];
     foreach ($custom_fields as $value){
+        var_dump($value);
+        echo "<br>";
+        var_dump($name);
         if($value['name'] == $name and $value['field_type'] == $type){
             return $value['id'];
         }
@@ -124,36 +136,34 @@ undefined/2.0");
     $out = curl_exec($curl);
     curl_close($curl);
     $result = json_decode($out,TRUE);
-
 }
 //Добавление мультиселекта
-function add_multiselect(){
+function add_custom_field($name,$type,$id_element_type,$value){
+    if($type==5){
+        $fueld_enums = array (
+            'name' => $name,
+            'type' => $type,
+            'element_type' => $id_element_type,
+            'origin' => '32',
+            'enums' => $value,
+        );
+    }else $fueld_enums  = array (
+            'name' => $name,
+            'type' => $type,
+            'element_type' => $id_element_type,
+            'origin' => '32',
+    );
     $data = array (
         'add' =>
             array (
-                0 =>
-                    array (
-                        'name' => 'kk',
-                        'type' => '5',
-                        'element_type' => '1',
-                        'origin' => '32',
-                        'enums' =>
-                            array (
-                                0 => '1',
-                                1 => '2',
-                                2 => '3',
-                                3 => '4',
-                                4 => '5',
-                                5 => '6',
-                                6 => '7',
-                                7 => '8',
-                                8 => '9',
-                                9 => '10',
-                            ),
-                    ),
+                $fueld_enums,
             ),
     );
-    $fl = check_mult($data['add'][0]['name'],$data['add'][0]['type']);
+    foreach ($data as $value){
+        //var_dump($value);
+        echo "<br>";
+    }
+    $fl = check_mult($data['add'][0]['name'],$data['add'][0]['type'],$id_element_type);
     $link = "https://uburov.amocrm.ru/api/v2/fields";
 
     $headers[] = "Accept: application/json";
