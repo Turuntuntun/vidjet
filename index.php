@@ -63,6 +63,13 @@ if(isset($_POST['text']) and $_POST['id_essence'] and $_POST['id_elem']){
     var_dump($id_text);
     add_text($id_essence,$id_text,$id_elem,$text);
 }
+if(isset($_POST['note']) and isset($_POST['type_note']) and isset($_POST['id_note_essence']) and isset($_POST['type_note_eccence'])){
+    $text_note = $_POST['note'];
+    $type_note = $_POST['type_note'];
+    $type_note_eccence = $_POST['type_note_eccence'];
+    $id_note_essence = $_POST['id_note_essence'];
+    add_note($text_note,$type_note,$type_note_eccence,$id_note_essence);
+}
 function add_text($id_essence,$id_text,$id_elem,$text){
     $data = array (
         'update' =>
@@ -108,8 +115,61 @@ undefined/2.0");
     curl_close($curl);
     $result = json_decode($out,TRUE);
 }
-function add_note(){
+function add_note($text_note,$type_note,$type_note_eccence,$id_note_essence){
+    if($type_note=='4'){
+        $data = array (
+            'add' =>
+                array (
+                    0 =>
+                        array (
+                            'element_id' =>  $type_note_eccence,
+                            'element_type' => $id_note_essence,
+                            'note_type' => $type_note,
+                            'text' => $text_note,
+                        ),
+                ),
+        );
+    }else if($type_note=='10'){
+        $data = array (
+            'add' =>
+                array (
+                    0 =>
+                        array (
+                            'element_id' =>  $type_note_eccence,
+                            'element_type' => $id_note_essence,
+                            'note_type' => $type_note,
+                            'responsible_user_id'=> '949478',
+                            'created_by'=> time(),
+                            "params"=>array(
+                                        "UNIQ"=>"BCEFA2341",
+                                        "DURATION"=>"33",
+                                        "SRC"=>"http://example.com/calls/1.mp3",
+                                        "LINK"=>"http://example.com/calls/1.mp3",
+                                        "PHONE"=>"79254679145"
+                            ),
+                        ),
+                ),
+        );
+    }
 
+    $link = "https://uburov.amocrm.ru/api/v2/notes";
+
+    $headers[] = "Accept: application/json";
+
+    //Curl options
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
+    curl_setopt($curl, CURLOPT_USERAGENT, "amoCRM-API-client-
+undefined/2.0");
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+    curl_setopt($curl, CURLOPT_URL, $link);
+    curl_setopt($curl, CURLOPT_HEADER,false);
+    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(__FILE__)."/cookie.txt");
+    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(__FILE__)."/cookie.txt");
+    $out = curl_exec($curl);
+    curl_close($curl);
+    $result = json_decode($out,TRUE);
 }
 //Проверка дублирования поля
 function check_mult($type,$id_type){
