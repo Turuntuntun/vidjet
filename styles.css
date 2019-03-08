@@ -1,4 +1,4 @@
-input{
+input,select{
     display: block;
     margin-bottom: 10px;
     outline:none;
@@ -26,15 +26,26 @@ input[type='submit']{
 input[type='submit']:hover{
     background-color: #331dda;
 }
-form{
+form {
     margin-bottom: 50px;
-    margin-right:100px;
+    margin-right: 100px;
 }
 div{
-    width: 1100px;
     display: flex;
     margin: 0 auto;
 }
+.first_block{
+    width: 1100px;
+}
+.second_block{
+    width: 800px;
+}
 p{
     text-align: center;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
 }

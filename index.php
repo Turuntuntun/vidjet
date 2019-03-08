@@ -21,7 +21,7 @@ if(isset($_POST['submit_cont'])){
         if($count/500>1){
             $limit=500;
         }else $limit = $count;
-        for($i=0;$i<$limit;$i++){
+        for($i = 0; $i < $limit; $i++){
             //Заполнение сущностей случайными значениями.
             $contacs[] = array('name' => create_essence());
             $leads[] = array('name' => create_essence());
@@ -70,6 +70,7 @@ if(isset($_POST['note']) and isset($_POST['type_note']) and isset($_POST['id_not
     $id_note_essence = $_POST['id_note_essence'];
     add_note($text_note,$type_note,$type_note_eccence,$id_note_essence);
 }
+//Добавление текста
 function add_text($id_essence,$id_text,$id_elem,$text){
     $data = array (
         'update' =>
@@ -115,6 +116,7 @@ undefined/2.0");
     curl_close($curl);
     $result = json_decode($out,TRUE);
 }
+//Добавление примечания
 function add_note($text_note,$type_note,$type_note_eccence,$id_note_essence){
     if($type_note=='4'){
         $data = array (
@@ -151,7 +153,6 @@ function add_note($text_note,$type_note,$type_note_eccence,$id_note_essence){
                 ),
         );
     }
-
     $link = "https://uburov.amocrm.ru/api/v2/notes";
 
     $headers[] = "Accept: application/json";
@@ -265,7 +266,7 @@ function add_custom_field($type,$id_element_type,$value){
             'origin' => '32',
             'enums' => $value,
         );
-    }else if($type=='1'){
+    }elseif($type=='1'){
         $fueld_enums = array(
             'name' => "Тестовое поле",
             'type' => $type,
