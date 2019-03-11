@@ -70,6 +70,48 @@ if(isset($_POST['note']) and isset($_POST['type_note']) and isset($_POST['id_not
     $id_note_essence = $_POST['id_note_essence'];
     add_note($text_note,$type_note,$type_note_eccence,$id_note_essence);
 }
+if(isset($_POST['text_task']) and isset($_POST['date_tusk']) and isset($_POST['id_task']) and isset($_POST['id_essence_task']) and isset($_POST['id_elem_text'])){
+    $text_task = $_POST['text_task'];
+    $date_task = $_POST['date_task'];
+    $id_task = $_POST['id_task'];
+    $id_essence_task = $_POST['id_essence_task'];
+    $id_elem_text = $_POST['id_elem_text'];
+    add_task($text_task,$date_task,$id_task,$id_essence_task,$id_elem_text);
+}
+function add_task($text_task,$date_task,$id_task,$id_essence_task,$id_elem_text){
+    $data = array (
+        'add' =>
+            array (
+                0 =>
+                    array(
+                        'element_id' =>  $id_elem_text,
+                        'element_type' => $id_essence_task,
+                        'complete_till' => $date_task,
+                        'task_type' => '2',
+                        'text' => $text_task,
+                        'responsible_user_id' => $id_task,
+                    ),
+            ),
+    );
+    $link = "https://uburov.amocrm.ru/api/v2/tasks";
+
+    $headers[] = "Accept: application/json";
+
+    //Curl options
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
+    curl_setopt($curl, CURLOPT_USERAGENT, "amoCRM-API-client-
+undefined/2.0");
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+    curl_setopt($curl, CURLOPT_URL, $link);
+    curl_setopt($curl, CURLOPT_HEADER,false);
+    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(__FILE__)."/cookie.txt");
+    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(__FILE__)."/cookie.txt");
+    $out = curl_exec($curl);
+    curl_close($curl);
+    $result = json_decode($out,TRUE);
+}
 //Добавление текста
 function add_text($id_essence,$id_text,$id_elem,$text){
     $data = array (
